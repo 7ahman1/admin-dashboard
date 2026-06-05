@@ -1,0 +1,18 @@
+{
+  "buildCommand": "echo 'Static files ready'",
+  "outputDirectory": ".",
+  "routes": [
+    {
+      "src": "^/$",
+      "dest": "/index.html"
+    },
+    {
+      "src": "/admin-dashboard",
+      "dest": "/admin-dashboard.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ]
+}
