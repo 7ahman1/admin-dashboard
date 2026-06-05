@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CRM Dashboard - Leads Management</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="crm-dashboard.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+  <div class="crm-container">
+    <!-- Sidebar Navigation -->
+    <aside class="crm-sidebar">
+      <div class="sidebar-header">
+        <h2><i class="fas fa-chart-line"></i> CRM Dashboard</h2>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" data-section="dashboard">
+          <i class="fas fa-home"></i> Dashboard
+        </a>
+        <a href="#" class="nav-item" data-section="leads">
+          <i class="fas fa-users"></i> All Leads
+        </a>
+        <a href="#" class="nav-item" data-section="add-lead">
+          <i class="fas fa-plus-circle"></i> Add New Lead
+        </a>
+        <a href="#" class="nav-item" data-section="reports">
+          <i class="fas fa-chart-bar"></i> Reports
+        </a>
+        <a href="index.html" class="nav-item">
+          <i class="fas fa-arrow-left"></i> Back to Site
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="crm-main">
+      <!-- Header -->
+      <header class="crm-header">
+        <h1 id="section-title">Dashboard</h1>
+        <div class="header-actions">
+          <input type="text" id="search-input" class="search-box" placeholder="Search leads...">
+          <button class="btn btn-secondary" id="sync-btn" title="Sync bookings from website">
+            <i class="fas fa-sync"></i> Sync Bookings
+          </button>
+          <button class="btn btn-primary" id="export-btn">
+            <i class="fas fa-download"></i> Export
+          </button>
+        </div>
+      </header>
+
+      <!-- Content Sections -->
+      <div class="crm-content">
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="content-section active">
+          <div class="dashboard-grid">
+            <!-- Stats Cards -->
+            <div class="stats-container">
+              <div class="stat-card">
+                <div class="stat-icon" style="background: #3498db;">
+                  <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-content">
+                  <h3>Total Leads</h3>
+                  <p id="total-leads" class="stat-value">0</p>
+                </div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-icon" style="background: #f39c12;">
+                  <i class="fas fa-hourglass-half"></i>
+                </div>
+                <div class="stat-content">
+                  <h3>Pending</h3>
+                  <p id="pending-leads" class="stat-value">0</p>
+                </div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-icon" style="background: #27ae60;">
+                  <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                  <h3>Qualified</h3>
+                  <p id="qualified-leads" class="stat-value">0</p>
+                </div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-icon" style="background: #2ecc71;">
+                  <i class="fas fa-trophy"></i>
+                </div>
+                <div class="stat-content">
+                  <h3>Converted</h3>
+                  <p id="converted-leads" class="stat-value">0</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent Leads -->
+            <div class="recent-leads-section">
+              <h2>Recent Leads</h2>
+              <div id="recent-leads-table" class="recent-leads-container">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+
+            <!-- Leads by Status Chart -->
+            <div class="chart-section">
+              <h2>Leads by Status</h2>
+              <div id="status-chart" class="status-chart">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- All Leads Section -->
+        <section id="leads" class="content-section">
+          <div class="section-header">
+            <h2>All Leads</h2>
+            <div class="filter-group">
+              <select id="status-filter" class="filter-select">
+                <option value="">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="contacted">Contacted</option>
+                <option value="qualified">Qualified</option>
+                <option value="won">Won</option>
+                <option value="lost">Lost</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table class="leads-table" id="leads-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Service</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="leads-tbody">
+                <!-- Populated by JS -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Add Lead Section -->
+        <section id="add-lead" class="content-section">
+          <div class="form-container">
+            <h2>Add New Lead</h2>
+            <form id="add-lead-form" class="lead-form">
+              <div class="form-group">
+                <label for="lead-name">Name *</label>
+                <input type="text" id="lead-name" required placeholder="Full name">
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="lead-email">Email *</label>
+                  <input type="email" id="lead-email" required placeholder="email@example.com">
+                </div>
+                <div class="form-group">
+                  <label for="lead-phone">Phone</label>
+                  <input type="tel" id="lead-phone" placeholder="Phone number">
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="lead-service">Service *</label>
+                  <select id="lead-service" required>
+                    <option value="">Select a service</option>
+                    <option value="Web Development">Web Development</option>
+                    <option value="SEO Optimization">SEO Optimization</option>
+                    <option value="LinkedIn Growth">LinkedIn Growth</option>
+                    <option value="Google Optimization">Google Optimization</option>
+                    <option value="Personal Branding">Personal Branding</option>
+                    <option value="Social Media Growth">Social Media Growth</option>
+                    <option value="Whatsapp Business and API">WhatsApp Business</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="lead-status">Status</label>
+                  <select id="lead-status">
+                    <option value="pending">Pending</option>
+                    <option value="contacted">Contacted</option>
+                    <option value="qualified">Qualified</option>
+                    <option value="won">Won</option>
+                    <option value="lost">Lost</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="lead-company">Company</label>
+                  <input type="text" id="lead-company" placeholder="Company name">
+                </div>
+                <div class="form-group">
+                  <label for="lead-budget">Budget</label>
+                  <input type="number" id="lead-budget" placeholder="Budget amount">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="lead-remarks">Remarks</label>
+                <textarea id="lead-remarks" rows="4" placeholder="Additional notes about the lead"></textarea>
+              </div>
+
+              <div class="form-group">
+                <label for="lead-followup">Follow-up Date</label>
+                <input type="date" id="lead-followup">
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Save Lead</button>
+                <button type="reset" class="btn btn-secondary">Clear</button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <!-- Reports Section -->
+        <section id="reports" class="content-section">
+          <div class="reports-container">
+            <h2>Reports & Analytics</h2>
+            
+            <div class="report-cards">
+              <div class="report-card">
+                <h3>Conversion Rate</h3>
+                <p id="conversion-rate" class="report-value">0%</p>
+              </div>
+              <div class="report-card">
+                <h3>Leads This Month</h3>
+                <p id="month-leads" class="report-value">0</p>
+              </div>
+              <div class="report-card">
+                <h3>Avg. Lead Value</h3>
+                <p id="avg-value" class="report-value">$0</p>
+              </div>
+              <div class="report-card">
+                <h3>Response Rate</h3>
+                <p id="response-rate" class="report-value">0%</p>
+              </div>
+            </div>
+
+            <div class="chart-grid">
+              <div class="chart-card">
+                <h3>Leads by Service</h3>
+                <div id="service-chart" class="chart"></div>
+              </div>
+              <div class="chart-card">
+                <h3>Leads by Status</h3>
+                <div id="report-status-chart" class="chart"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- Edit Lead Modal -->
+  <div id="edit-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Edit Lead</h2>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="edit-lead-form" class="lead-form">
+        <input type="hidden" id="edit-lead-id">
+
+        <div class="form-group">
+          <label for="edit-name">Name *</label>
+          <input type="text" id="edit-name" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="edit-email">Email *</label>
+            <input type="email" id="edit-email" required>
+          </div>
+          <div class="form-group">
+            <label for="edit-phone">Phone</label>
+            <input type="tel" id="edit-phone">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="edit-service">Service *</label>
+            <select id="edit-service" required>
+              <option value="Web Development">Web Development</option>
+              <option value="SEO Optimization">SEO Optimization</option>
+              <option value="LinkedIn Growth">LinkedIn Growth</option>
+              <option value="Google Optimization">Google Optimization</option>
+              <option value="Personal Branding">Personal Branding</option>
+              <option value="Social Media Growth">Social Media Growth</option>
+              <option value="Whatsapp Business and API">WhatsApp Business</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="edit-status">Status</label>
+            <select id="edit-status">
+              <option value="pending">Pending</option>
+              <option value="contacted">Contacted</option>
+              <option value="qualified">Qualified</option>
+              <option value="won">Won</option>
+              <option value="lost">Lost</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="edit-company">Company</label>
+            <input type="text" id="edit-company">
+          </div>
+          <div class="form-group">
+            <label for="edit-budget">Budget</label>
+            <input type="number" id="edit-budget">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="edit-remarks">Remarks</label>
+          <textarea id="edit-remarks" rows="4"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="edit-followup">Follow-up Date</label>
+          <input type="date" id="edit-followup">
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Update Lead</button>
+          <button type="button" class="btn btn-danger" id="delete-btn">Delete Lead</button>
+          <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="supabase.js"></script>
+  <script src="crm.js"></script>
+</body>
+
+</html>
