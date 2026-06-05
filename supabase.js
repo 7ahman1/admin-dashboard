@@ -3,33 +3,14 @@ const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 
 let client = null;
 
-function initializeSupabaseClient() {
-  if (client) return client;
-  
-  if (typeof supabase !== "undefined" && supabase?.createClient) {
-    try {
-      client = supabase.createClient(supabaseUrl, supabaseKey);
-      console.log("✅ Supabase client initialized successfully");
-    } catch (error) {
-      console.error("❌ Failed to initialize Supabase client:", error);
-      client = null;
-    }
+// Create client immediately - Supabase CDN is loaded before this script
+try {
+  if (typeof supabase !== "undefined" && supabase.createClient) {
+    client = supabase.createClient(supabaseUrl, supabaseKey);
+    console.log("✅ Supabase client initialized");
+  } else {
+    console.warn("⚠️ Supabase library not available yet");
   }
-  return client;
-}
-
-// Initialize immediately if supabase is available
-initializeSupabaseClient();
-
-// Fallback: Initialize when supabase library loads
-if (!client) {
-  const checkSupabase = () => {
-    if (typeof supabase !== "undefined" && !client) {
-      initializeSupabaseClient();
-    }
-  };
-  
-  // Check periodically for a short time
-  const checker = setInterval(checkSupabase, 100);
-  setTimeout(() => clearInterval(checker), 3000);
+} catch (error) {
+  console.error("❌ Failed to initialize Supabase:", error);
 }
